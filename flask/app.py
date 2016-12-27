@@ -12,6 +12,7 @@ def submit():
 	
 	#reference
 	#https://www.tutorialspoint.com/flask/flask_url_building.htm
+	print(url_for('my_results',var1=var1,var2=var2))
 	return redirect(url_for('my_results',var1=var1,var2=var2))
 
 

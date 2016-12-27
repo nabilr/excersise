@@ -1,7 +1,12 @@
-# project name (generate executable with this name)
-TARGET   = test
+#Author: Nabil Rahiman
+#Date:27/Dec/2017
+
+
+#Reference
+#http://makepp.sourceforge.net/1.19/makepp_tutorial.html
 
 CC       = c++ -c
+
 # compiling flags here
 CFLAGS   = -Wall -I.
 
@@ -9,22 +14,24 @@ LINKER   = c++ -o
 # linking flags here
 LFLAGS   = -Wall
 
-#OBJDIR	 = ../obj
-#OBJS    = $(OBJDIR)/%.o
+OBJDIR	 = ../obj
+
+OBJECTS  := $(OBJDIR)/test.o
+
+#Program name
+TARGET   = $(OBJDIR)/test
+
 rm       = rm -f
 
-#$(OBJS): %.cc
-
-
-%.o: %.cc
-	@echo $@
+$(OBJDIR)/%.o: %.cc
 	$(CC)   $< -o $@
-#	$(CC)   $(input) -o $(output)
 	@echo "Compilation complete!"
 
-test: $(OBJECTS)
-	@echo $<
-#	$(LINKER) test  $(OBJECTS) 
+
+
+$(TARGET): $(OBJECTS)
+	$(LINKER) $@  $(OBJECTS) 
+	@echo "Link complete!"
 
 #$(TARGET): $(OBJS)
 #	@echo $(SOURCES)
