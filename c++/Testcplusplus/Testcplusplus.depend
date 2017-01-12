@@ -1,0 +1,7 @@
+# depslib dependency file v1.0
+1483442908 source:/home/nabil/github/excersise/c++/Testcplusplus/main.cpp
+	<iostream>
+	<map>
+	<string>
+	<vector>
+

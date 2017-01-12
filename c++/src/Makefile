@@ -8,7 +8,7 @@
 CC       = c++ -c
 
 # compiling flags here
-CFLAGS   = -Wall -I.
+CFLAGS   = -Wall -I.   -std=c++11
 
 LINKER   = c++ -o
 # linking flags here
@@ -24,13 +24,13 @@ TARGET   = $(OBJDIR)/test
 rm       = rm -f
 
 $(OBJDIR)/%.o: %.cc
-	$(CC)   $< -o $@
+	$(CC) $(CFLAGS)  $< -o $@
 	@echo "Compilation complete!"
 
 
 
 $(TARGET): $(OBJECTS)
-	$(LINKER) $@  $(OBJECTS) 
+	$(LINKER)  $@  $(OBJECTS) 
 	@echo "Link complete!"
 
 #$(TARGET): $(OBJS)
