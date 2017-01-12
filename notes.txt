@@ -1,0 +1,458 @@
+
+http://www.cs.utexas.edu/users/lam/386p/slides/TCP%20Congestion%20Control.pdf
+
+http://www.ssfnet.org/Exchange/tcp/tcpTutorialNotes.html
+
+https://condor.depaul.edu/jkristof/technotes/congestion.pdf
+
+https://www.utdallas.edu/~venky/acn/CongestionControl.pdf
+
+http://www.cs.colostate.edu/~cs557/Slides/06TCP.pdf
+
+http://classes.engineering.wustl.edu/cse473/images/6/6d/Lec13.pdf
+
+http://www.cs.ccsu.edu/~stan/classes/CS490/Slides/Networks4-Ch3-5.pdf
+http://www2.ing.unipi.it/~a008149/corsi/reti/lucidi/07-Congestion-Control.pdf
+
+
+./chrome/browser/apps/app_shim/unix_domain_socket_acceptor.cc"
+
+
+
+./base/message_loop/message_loop.cc  << process request.
+
+
+net/tools/quic/quic_simple_server_bin.cc
+
+net/quic/core/quic_sent_packet_manager
+
+
+quic_framer.cc  <<<< after receving 
+
+quic_dispatcher.cc
+
+TcpVerusSenderBase::InSlowStart
+QuicTime::Delta TcpVerusSenderBase::TimeUntilSend
+void TcpVerusSenderBase::OnPacketAcked
+bool TcpVerusSenderBase::InRecovery() const 
+bool TcpVerusSenderBase::OnPacketSent
+QuicBandwidth TcpVerusSenderBase::PacingRate(
+QuicBandwidth TcpVerusSenderBase::BandwidthEstimate() const {
+
+
+
+770 QuicTime::Delta QuicSentPacketManager::TimeUntilSend(QuicTime now,
+ 771                                                      QuicPathId* path_id) {
+ 772   QuicTime::Delta delay = QuicTime::Delta::Infinite();
+ 773   // The TLP logic is entirely contained within QuicSentPacketManager, so the
+ 774   // send algorithm does not need to be consulted.
+ 775   if (pending_timer_transmission_count_ > 0) {
+ 776     delay = QuicTime::Delta::Zero();
+ 777   } else if (using_pacing_) {
+ 778     delay =
+ 779         pacing_sender_.TimeUntilSend(now, unacked_packets_.bytes_in_flight());
+ 780   } else {
+ 781     delay =
+ 782         send_algorithm_->TimeUntilSend(now, unacked_packets_.bytes_in_flight());
+ 783   }
+ 784   if (!delay.IsInfinite()) {
+ 785     *path_id = path_id_;
+ 786   }
+ 787   return delay;
+ 788 }
+ 789 
+"net/quic/core/quic_sent_packet_manager.cc" 1018
+
+
+
+/all connection intitaives
+  .c
+
+
+ ./out/Default/quic_server  --quic_in_memory_cache_dir=/tmp/quic-data/  --certificate_file=net/tools/quic/certs/out/leaf_cert.pem --key_file=net/tools/quic/certs/out/leaf_cert.pkcs8 --enable-logging --v=1
+
+
+objdump -x  out/Default/quic_server| grep server give you hind on main 
+
+"net/quic/core/quic_sent_packet_manager_interface.h
+
+[16556:16584:0104/160253:VERBOSE1:verus.cc(147)]  verus log  QuicTime::Delta TcpVerusSenderBase::TimeUntilSend v
+[16556:16584:0104/160253:VERBOSE1:verus.cc(140)]  verus log bool TcpVerusSenderBase::OnPacketSent v
+[16556:16584:0104/160253:VERBOSE1:verus.cc(192)]  verus log bool TcpVerusSenderBase::InRecovery() v
+[16556:16584:0104/160253:VERBOSE1:verus.cc(147)]  verus log
+[16556:16584:0104/160253:VERBOSE1:verus.cc(147)]  verus log
+[16556:16584:0104/160253:VERBOSE1:verus.cc(140)]  verus log
+[16556:16584:0104/160253:VERBOSE1:verus.cc(140)]  verus log
+[16556:16584:0104/160253:VERBOSE1:verus.cc(147)]  verus log
+[16556:16584:0104/160253:VERBOSE1:verus.cc(182)]  verus log bool TcpVerusSenderBase::InSlowStart() v
+[16556:16584:0104/160253:VERBOSE1:verus.cc(131)]  verus log TcpVerusSenderBase::OnPacketAcked
+[16556:16584:0104/160253:VERBOSE1:verus.cc(131)]  verus log
+[16556:16584:0104/160253:VERBOSE1:verus.cc(131)]  verus log
+[16556:16584:0104/160253:VERBOSE1:verus.cc(192)]  verus log
+[16556:16584:0104/160253:VERBOSE1:verus.cc(182)]  verus log
+[16556:16584:0104/160253:VERBOSE1:verus.cc(172)]  verus log
+[16556:16584:0104/160253:VERBOSE1:verus.cc(147)]  verus log
+[16556:16584:0104/160308:VERBOSE1:verus.cc(147)]  verus log
+[16556:16584:0104/160308:VERBOSE1:verus.cc(140)]  verus log
+[16556:16584:0104/160308:VERBOSE1:verus.cc(192)]  verus log
+[16556:16584:0104/160308:VERBOSE1:verus.cc(182)]  verus log
+[16556:16584:0104/160308:VERBOSE1:verus.cc(131)]  verus log
+[16556:16584:0104/160308:VERBOSE1:verus.cc(192)]  verus log
+[16556:16584:0104/160308:VERBOSE1:verus.cc(182)]  verus log
+[16556:16584:0104/160308:VERBOSE1:verus.cc(172)]  verus log QuicBandwidth TcpVerusSenderBase::BandwidthEstimate() const {
+[16556:16584:0104/160308:VERBOSE1:verus.cc(147)]  verus log
+
+
+
+
+
+gdb) bt
+#0  0x00007ffff755538d in (anonymous namespace)::QuicSentPacketManager::QuicSentPacketManager((anonymous namespace)::Perspective, (anonymous namespace)::QuicPathId, (anonymous namespace)::QuicClock const*, (anonymous namespace)::QuicConnectionStats*, (anonymous namespace)::CongestionControlType, (anonymous namespace)::LossDetectionType, (anonymous namespace)::QuicSentPacketManager::MultipathDelegateInterface*) (this=0x2c6a0e9c0c20, perspective=(anonymous namespace)::Perspective::IS_SERVER, path_id=0 '\000', clock=0x7fffffffcee8, stats=0x2c6a0e93cce0, congestion_control_type=(anonymous namespace)::kVerus, loss_type=(anonymous namespace)::kNack, delegate=0x0) at ../../net/quic/core/quic_sent_packet_manager.cc:95
+#1  0x00007ffff74de88e in (anonymous namespace)::QuicConnection::QuicConnection((anonymous namespace)::QuicConnectionId, (anonymous namespace)::IPEndPoint, (anonymous namespace)::QuicConnectionHelperInterface*, (anonymous namespace)::QuicAlarmFactory*, (anonymous namespace)::QuicPacketWriter*, bool, (anonymous namespace)::Perspective, (anonymous namespace)::QuicVersionVector const&) (this=0x2c6a0e93c020, connection_id=14203599538310646350, address=..., helper=0x2c6a0ea45c80, alarm_factory=0x2c6a0e971c80, writer=0x2c6a0e959f70, owns_writer=true, perspective=(anonymous namespace)::Perspective::IS_SERVER, supported_versions=...) at ../../net/quic/core/quic_connection.cc:268
+#2  0x000000000044b581 in (anonymous namespace)::QuicSimpleDispatcher::CreateQuicSession((anonymous namespace)::QuicConnectionId, (anonymous namespace)::IPEndPoint const&) (this=0x2c6a0e978e20, connection_id=14203599538310646350, client_address=...) at ../../net/tools/quic/quic_simple_dispatcher.cc:31
+#3  0x00000000004263a2 in (anonymous namespace)::QuicDispatcher::ProcessChlo() (this=0x2c6a0e978e20) at ../../net/tools/quic/quic_dispatcher.cc:722
+#4  0x0000000000425d77 in (anonymous namespace)::QuicDispatcher::ProcessUnauthenticatedHeaderFate((anonymous namespace)::QuicDispatcher::QuicPacketFate, (anonymous namespace)::QuicConnectionId, (anonymous namespace)::QuicPacketNumber) (this=0x2c6a0e978e20, fate=(anonymous namespace)::QuicDispatcher::kFateProcess, connection_id=0, packet_number=1) at ../../net/tools/quic/quic_dispatcher.cc:358
+#5  0x0000000000429c11 in (anonymous namespace)::QuicDispatcher::OnStatelessRejectorProcessDone((anonymous namespace)::unique_ptr<net::StatelessRejector, std::default_delete<net::StatelessRejector> >, (anonymous namespace)::QuicPacketNumber, (anonymous namespace)::QuicVersion) (this=0x2c6a0e978e20, rejector=..., packet_number=1, first_version=(anonymous namespace)::QUIC_VERSION_36)
+    at ../../net/tools/quic/quic_dispatcher.cc:908
+#6  0x000000000042e7b8 in (anonymous namespace)::StatelessRejectorProcessDoneCallback::Run((anonymous namespace)::unique_ptr<net::StatelessRejector, std::default_delete<net::StatelessRejector> >) (this=0x2c6a0e9644a0, rejector=...) at ../../net/tools/quic/quic_dispatcher.cc:791
+#7  0x0000000000465d87 in (anonymous namespace)::StatelessRejector::Process((anonymous namespace)::unique_ptr<net::StatelessRejector, std::default_delete<net::StatelessRejector> >, (anonymous namespace)::unique_ptr<net::StatelessRejector::ProcessDoneCallback, std::default_delete<net::StatelessRejector::ProcessDoneCallback> >) (rejector=..., done_cb=...) at ../../net/tools/quic/stateless_rejector.cc:87
+#8  0x0000000000425c6a in (anonymous namespace)::QuicDispatcher::MaybeRejectStatelessly((anonymous namespace)::QuicConnectionId, (anonymous namespace)::QuicPacketHeader const&) (this=0x2c6a0e978e20, connection_id=14203599538310646350, header=...) at ../../net/tools/quic/quic_dispatcher.cc:862
+#9  0x0000000000425680 in (anonymous namespace)::QuicDispatcher::OnUnauthenticatedHeader((anonymous namespace)::QuicPacketHeader const&) (this=0x2c6a0e978e20, header=...)
+    at ../../net/tools/quic/quic_dispatcher.cc:342
+#10 0x00007ffff751276a in (anonymous namespace)::QuicFramer::ProcessUnauthenticatedHeader((anonymous namespace)::QuicDataReader*, (anonymous namespace)::QuicPacketHeader*) (this=0x2c6a0e9791b8, encrypted_reader=0x7fffffffae50, header=0x7fffffffad08) at ../../net/quic/core/quic_framer.cc:1091
+#11 0x00007ffff7511fba in (anonymous namespace)::QuicFramer::ProcessDataPacket((anonymous namespace)::QuicDataReader*, (anonymous namespace)::QuicPacketPublicHeader const&, (anonymous namespace)::QuicEncryptedPacket const&, char*, size_t) (this=0x2c6a0e9791b8, encrypted_reader=0x7fffffffae50, public_header=..., packet=..., decrypted_buffer=0x7fffffffb000 "I\002", buffer_length=1452)
+    at ../../net/quic/core/quic_framer.cc:611
+#12 0x00007ffff75114f8 in (anonymous namespace)::QuicFramer::ProcessPacket((anonymous namespace)::QuicEncryptedPacket const&) (this=0x2c6a0e9791b8, packet=...) at ../../net/quic/core/quic_framer.cc:574
+#13 0x0000000000424d7f in (anonymous namespace)::QuicDispatcher::ProcessPacket((anonymous namespace)::IPEndPoint const&, (anonymous namespace)::IPEndPoint const&, (anonymous namespace)::QuicReceivedPacket const&) (this=0x2c6a0e978e20, server_address=..., client_address=..., packet=...) at ../../net/tools/quic/quic_dispatcher.cc:242
+#14 0x000000000044dbfe in (anonymous namespace)::QuicSimpleServer::OnReadComplete(int) (this=0x7fffffffce60, result=1350) at ../../net/tools/quic/quic_simple_server.cc:205
+#15 0x000000000044eed4 in (anonymous namespace)::(anonymous namespace)::FunctorTraits<void (net::QuicSimpleServer::*)(int), void>::Invoke<net::QuicSimpleServer*, int>(void ((anonymous namespace)::QuicSimpleServer::*)((anonymous namespace)::QuicSimpleServer * const, int), <unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x1db39>, <unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x1db45>) (method=
+    (void ((anonymous namespace)::QuicSimpleServer::*)((anonymous namespace)::QuicSimpleServer * const, int)) 0x44d9c0 <(anonymous namespace)::QuicSimpleServer::OnReadComplete(int)>, receiver_ptr=<unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x1db39>, args=<unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x1db45>)
+    at ../../base/bind_internal.h:214
+
+
+
+
+
+
+
+Breakpoint 8, (anonymous namespace)::QuicSentPacketManager::SetSendAlgorithm (
+    this=0x252433be4c20, congestion_control_type=(anonymous namespace)::kCubic)
+    at ../../net/quic/core/quic_sent_packet_manager.cc:941
+941   SetSendAlgorithm(SendAlgorithmInterface::Create(
+(gdb) bt
+#0  0x00007ffff7555e65 in (anonymous namespace)::QuicSentPacketManager::SetSendAlgorithm((anonymous namespace)::CongestionControlType) (this=0x252433be4c20, congestion_control_type=(anonymous namespace)::kCubic)
+    at ../../net/quic/core/quic_sent_packet_manager.cc:941
+#1  0x00007ffff7555e26 in (anonymous namespace)::QuicSentPacketManager::QuicSentPacketManager((anonymous namespace)::Perspective, (anonymous namespace)::QuicPathId, (anonymous namespace)::QuicClock const*, (anonymous namespace)::QuicConnectionStats*, (anonymous namespace)::CongestionControlType, (anonymous namespace)::LossDetectionType, (anonymous namespace)::QuicSentPacketManager::MultipathDelegateInterface*) (this=0x252433be4c20, perspective=(anonymous namespace)::Perspective::IS_SERVER, path_id=0 '\000', clock=0x7fffffffcee8, stats=0x252433b60ce0, congestion_control_type=(anonymous namespace)::kCubic, loss_type=(anonymous namespace)::kNack, delegate=0x0) at ../../net/quic/core/quic_sent_packet_manager.cc:95
+#2  0x00007ffff74df39d in (anonymous namespace)::QuicConnection::QuicConnection((anonymous namespace)::QuicConnectionId, (anonymous namespace)::IPEndPoint, (anonymous namespace)::QuicConnectionHelperInterface*, (anonymous namespace)::QuicAlarmFactory*, (anonymous namespace)::QuicPacketWriter*, bool, (anonymous namespace)::Perspective, (anonymous namespace)::QuicVersionVector const&) (this=0x252433b60020, connection_id=13153842979454090980, address=..., helper=0x252433c69c80, alarm_factory=0x252433b95c80, writer=0x252433b7df70, owns_writer=true, perspective=(anonymous namespace)::Perspective::IS_SERVER, supported_versions=...)
+    at ../../net/quic/core/quic_connection.cc:268
+#3  0x000000000044b581 in (anonymous namespace)::QuicSimpleDispatcher::CreateQui---Type <return> to continue, or q <return> to quit---
+cSession((anonymous namespace)::QuicConnectionId, (anonymous namespace)::IPEndPoint const&) (this=0x252433b9ce20, connection_id=13153842979454090980, client_address=...) at ../../net/tools/quic/quic_simple_dispatcher.cc:31
+#4  0x00000000004263a2 in (anonymous namespace)::QuicDispatcher::ProcessChlo() (this=0x252433b9ce20) at ../../net/tools/quic/quic_dispatcher.cc:722
+#5  0x0000000000425d77 in (anonymous namespace)::QuicDispatcher::ProcessUnauthenticatedHeaderFate((anonymous namespace)::QuicDispatcher::QuicPacketFate, (anonymous namespace)::QuicConnectionId, (anonymous namespace)::QuicPacketNumber) (this=0x252433b9ce20, fate=(anonymous namespace)::QuicDispatcher::kFateProcess, connection_id=0, packet_number=1) at ../../net/tools/quic/quic_dispatcher.cc:358
+#6  0x0000000000429c11 in (anonymous namespace)::QuicDispatcher::OnStatelessRejectorProcessDone((anonymous namespace)::unique_ptr<net::StatelessRejector, std::default_delete<net::StatelessRejector> >, (anonymous namespace)::QuicPacketNumber, (anonymous namespace)::QuicVersion) (this=0x252433b9ce20, rejector=..., packet_number=1, first_version=(anonymous namespace)::QUIC_VERSION_36)
+    at ../../net/tools/quic/quic_dispatcher.cc:908
+#7  0x000000000042e7b8 in (anonymous namespace)::StatelessRejectorProcessDoneCallback::Run((anonymous namespace)::unique_ptr<net::StatelessRejector, std::default_delete<net::StatelessRejector> >) (this=0x252433b884a0, rejector=...)
+    at ../../net/tools/quic/quic_dispatcher.cc:791
+#8  0x0000000000465d87 in (anonymous namespace)::StatelessRejector::Process((anonymous namespace)::unique_ptr<net::StatelessRejector, std::default_delete<net::StatelessRejector> >, (anonymous namespace)::unique_ptr<net::StatelessRejector::P---Type <return> to continue, or q <return> to quit---
+rocessDoneCallback, std::default_delete<net::StatelessRejector::ProcessDoneCallback> >) (rejector=..., done_cb=...)
+    at ../../net/tools/quic/stateless_rejector.cc:87
+#9  0x0000000000425c6a in (anonymous namespace)::QuicDispatcher::MaybeRejectStatelessly((anonymous namespace)::QuicConnectionId, (anonymous namespace)::QuicPacketHeader const&) (this=0x252433b9ce20, connection_id=13153842979454090980, header=...) at ../../net/tools/quic/quic_dispatcher.cc:862
+#10 0x0000000000425680 in (anonymous namespace)::QuicDispatcher::OnUnauthenticatedHeader((anonymous namespace)::QuicPacketHeader const&) (this=0x252433b9ce20, header=...) at ../../net/tools/quic/quic_dispatcher.cc:342
+#11 0x00007ffff751327a in (anonymous namespace)::QuicFramer::ProcessUnauthenticatedHeader((anonymous namespace)::QuicDataReader*, (anonymous namespace)::QuicPacketHeader*) (this=0x252433b9d1b8, encrypted_reader=0x7fffffffae50, header=0x7fffffffad08) at ../../net/quic/core/quic_framer.cc:1091
+#12 0x00007ffff7512aca in (anonymous namespace)::QuicFramer::ProcessDataPacket((anonymous namespace)::QuicDataReader*, (anonymous namespace)::QuicPacketPublicHeader const&, (anonymous namespace)::QuicEncryptedPacket const&, char*, size_t) (this=0x252433b9d1b8, encrypted_reader=0x7fffffffae50, public_header=..., packet=..., decrypted_buffer=0x7fffffffb000 "I\002", buffer_length=1452)
+    at ../../net/quic/core/quic_framer.cc:611
+#13 0x00007ffff7512008 in (anonymous namespace)::QuicFramer::ProcessPacket((anonymous namespace)::QuicEncryptedPacket const&) (this=0x252433b9d1b8, packet=...)
+    at ../../net/quic/core/quic_framer.cc:574
+---Type <return> to continue, or q <return> to quit---
+#14 0x0000000000424d7f in (anonymous namespace)::QuicDispatcher::ProcessPacket((anonymous namespace)::IPEndPoint const&, (anonymous namespace)::IPEndPoint const&, (anonymous namespace)::QuicReceivedPacket const&) (this=0x252433b9ce20, server_address=..., client_address=..., packet=...)
+    at ../../net/tools/quic/quic_dispatcher.cc:242
+#15 0x000000000044dbfe in (anonymous namespace)::QuicSimpleServer::OnReadComplete(int) (this=0x7fffffffce60, result=1350)
+    at ../../net/tools/quic/quic_simple_server.cc:205
+#16 0x000000000044eed4 in (anonymous namespace)::(anonymous namespace)::FunctorTraits<void (net::QuicSimpleServer::*)(int), void>::Invoke<net::QuicSimpleServer*, int>(void ((anonymous namespace)::QuicSimpleServer::*)((anonymous namespace)::QuicSimpleServer * const, int), <unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x1db39>, <unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x1db45>) (method=
+    (void ((anonymous namespace)::QuicSimpleServer::*)((anonymous namespace)::QuicSimpleServer * const, int)) 0x44d9c0 <(anonymous namespace)::QuicSimpleServer::OnReadComplete(int)>, receiver_ptr=<unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x1db39>, args=<unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x1db45>)
+    at ../../base/bind_internal.h:214
+#17 0x000000000044ede6 in (anonymous namespace)::(anonymous namespace)::InvokeHelper<false, void>::MakeItSo<void (net::QuicSimpleServer::* const&)(int), net::QuicSimpleServer*, int>(void ((anonymous namespace)::QuicSimpleServer::*&)((anonym---Type <return> to continue, or q <return> to quit---
+ous namespace)::QuicSimpleServer * const, int), <unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x1daef>, <unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x1dafc>) (functor=
+    @0x252433be1740: (void ((anonymous namespace)::QuicSimpleServer::*)((anonymous namespace)::QuicSimpleServer * const, int)) 0x44d9c0 <(anonymous namespace)::QuicSimpleServer::OnReadComplete(int)>, args=<unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x1daef>, args=<unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x1dafc>) at ../../base/bind_internal.h:285
+#18 0x000000000044ed77 in (anonymous namespace)::(anonymous namespace)::Invoker<base::internal::BindState<void (net::QuicSimpleServer::*)(int), base::internal::UnretainedWrapper<net::QuicSimpleServer> >, void (int)>::RunImpl<void (net::QuicSimpleServer::* const&)(int), std::tuple<base::internal::UnretainedWrapper<net::QuicSimpleServer> > const&, 0>(void ((anonymous namespace)::QuicSimpleServer::*&)((anonymous namespace)::QuicSimpleServer * const, int), const (anonymous namespace)::tuple<base::internal::UnretainedWrapper<net::QuicSimpleServer> > &, (anonymous namespace)::IndexSequence<0>, <unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x18a83>) (functor=
+    @0x252433be1740: (void ((anonymous namespace)::QuicSimpleServer::*)((anonymous namespace)::QuicSimpleServer * const, int)) 0x44d9c0 <(anonymous namespace)::QuicSimpleServer::OnReadComplete(int)>, bound=..., unbound_args=<unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x18a83>)
+---Type <return> to continue, or q <return> to quit---
+    at ../../base/bind_internal.h:361
+#19 0x000000000044ecac in (anonymous namespace)::(anonymous namespace)::Invoker<base::internal::BindState<void (net::QuicSimpleServer::*)(int), base::internal::UnretainedWrapper<net::QuicSimpleServer> >, void (int)>::Run((anonymous namespace)::(anonymous namespace)::BindStateBase *, <unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x18a0f>) (base=0x252433be1720, unbound_args=<unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x18a0f>) at ../../base/bind_internal.h:339
+#20 0x00007ffff6ef4d1f in (anonymous namespace)::(anonymous namespace)::RunMixin<base::Callback<void (int), base::internal::CopyMode::Copyable, base::internal::RepeatMode::Repeating> >::Run(int) const (this=0x7fffffffbee8, args=1350)
+    at ../../base/callback.h:64
+#21 0x00007ffff770de17 in (anonymous namespace)::UDPSocketPosix::DoReadCallback(int) (this=0x252433b56728, rv=1350) at ../../net/udp/udp_socket_posix.cc:512
+#22 0x00007ffff770dae9 in (anonymous namespace)::UDPSocketPosix::DidCompleteRead() (this=0x252433b56728) at ../../net/udp/udp_socket_posix.cc:534
+#23 0x00007ffff770d8a2 in (anonymous namespace)::UDPSocketPosix::ReadWatcher::OnFileCanReadWithoutBlocking(int) (this=0x252433b567e8)
+    at ../../net/udp/udp_socket_posix.cc:497
+#24 0x00007ffff66e5a81 in (anonymous namespace)::MessagePumpLibevent::FileDescriptorWatcher::OnFileCanReadWithoutBlocking(int, (anonymous namespace)::MessagePumpLibevent*) (this=0x252433b567a8, fd=11, pump=0x252433b39a70)
+    at ../../base/message_loop/message_pump_libevent.cc:95
+---Type <return> to continue, or q <return> to quit---
+#25 0x00007ffff66e6f81 in (anonymous namespace)::MessagePumpLibevent::OnLibeventNotification(int, short, void*) (fd=11, flags=2, context=0x252433b567a8)
+    at ../../base/message_loop/message_pump_libevent.cc:344
+#26 0x00007ffff691fdae in event_process_active (base=0x252433ae1020)
+    at ../../base/third_party/libevent/event.c:381
+#27 0x00007ffff691f3f7 in event_base_loop (base=0x252433ae1020, flags=1)
+    at ../../base/third_party/libevent/event.c:521
+#28 0x00007ffff66e7272 in (anonymous namespace)::MessagePumpLibevent::Run((anonymous namespace)::MessagePump::Delegate*) (this=0x252433b39a70, delegate=0x7fffffffde60) at ../../base/message_loop/message_pump_libevent.cc:254
+#29 0x00007ffff66cc71c in (anonymous namespace)::MessageLoop::RunHandler() (this=0x7fffffffde60) at ../../base/message_loop/message_loop.cc:374
+#30 0x00007ffff67719e4 in (anonymous namespace)::RunLoop::Run() (this=0x7fffffffcc38) at ../../base/run_loop.cc:35
+#31 0x0000000000413ba5 in main(int, char**) (argc=7, argv=0x7fffffffe248)
+    at ../../net/tools/quic/quic_simple_server_bin.cc:97
+
+
+
+
+
+
+
+
+
+
+
+
+(gdb) bt
+#0  0x00007ffff7707b68 in (anonymous namespace)::UDPServerSocket::RecvFrom((anonymous namespace)::IOBuffer*, int, (anonymous namespace)::IPEndPoint*, (anonymous namespace)::CompletionCallback const&) (this=0x5075c821e0, buf=0x5075db34a0, buf_len=2904, address=0x7fffffffd4a0, callback=...)
+    at ../../net/udp/udp_server_socket.cc:49
+#1  0x000000000044d5b9 in (anonymous namespace)::QuicSimpleServer::StartReading() (this=0x7fffffffce50) at ../../net/tools/quic/quic_simple_server.cc:165
+#2  0x000000000044d404 in (anonymous namespace)::QuicSimpleServer::Listen((anonymous namespace)::IPEndPoint const&) (this=0x7fffffffce50, address=...)
+    at ../../net/tools/quic/quic_simple_server.cc:140
+#3  0x0000000000413b49 in main(int, char**) (argc=7, argv=0x7fffffffe238)
+    at ../../net/tools/quic/quic_simple_server_bin.cc:92
+(gdb) 
+
+
+
+
+(gdb) bt
+#0  0x00007ffff7707b68 in (anonymous namespace)::UDPServerSocket::RecvFrom((anonymous namespace)::IOBuffer*, int, (anonymous namespace)::IPEndPoint*, (anonymous namespace)::CompletionCallback const&) (this=0x5075c821e0, buf=0x5075db34a0, buf_len=2904, address=0x7fffffffd4a0, callback=...) at ../../net/udp/udp_server_socket.cc:49
+#1  0x000000000044d5b9 in (anonymous namespace)::QuicSimpleServer::StartReading() (this=0x7fffffffce50)
+    at ../../net/tools/quic/quic_simple_server.cc:165
+#2  0x000000000044dafa in (anonymous namespace)::QuicSimpleServer::OnReadComplete(int) (this=0x7fffffffce50, result=35)
+    at ../../net/tools/quic/quic_simple_server.cc:207
+#3  0x000000000044edc4 in (anonymous namespace)::(anonymous namespace)::FunctorTraits<void (net::QuicSimpleServer::*)(int), void>::Invoke<net::QuicSimpleServer*, int>(void ((anonymous namespace)::QuicSimpleServer::*)((anonymous namespace)::QuicSimpleServer * const, int), <unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x1db39>, <unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x1db45>) (method=
+    (void ((anonymous namespace)::QuicSimpleServer::*)((anonymous namespace)::QuicSimpleServer * const, int)) 0x44d8b0 <(anonymous namespace)::QuicSimpleServer::OnReadComplete(int)>, receiver_ptr=<unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x1db39>, args=<unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x1db45>) at ../../base/bind_internal.h:214
+#4  0x000000000044ecd6 in (anonymous namespace)::(anonymous namespace)::InvokeHelper<false, void>::MakeItSo<void (net::QuicSimpleServer::* const&)(int), net::QuicSimpleServer*, int>(void ((anonymous namespace)::QuicSimpleServer::*&)((anonymous namespace)::QuicSimpleServer * const, int), <unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x1daef>, <unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x1dafc>) (functor=
+    @0x5075cd8c80: (void ((anonymous namespace)::QuicSimpleServer::*)((anonymous namespace)::QuicSimpleServer * const, int)) 0x44d8b0 <(anonymous namespace)::QuicSimpleServer::OnReadComplete(int)>, args=<unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x1daef>, args=<unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x1dafc>)
+    at ../../base/bind_internal.h:285
+#5  0x000000000044ec67 in (anonymous namespace)::(anonymous namespace)::Invoker<base::internal::BindState<void (net::QuicSimpleServer::*)(int), base::internal::UnretainedWrapper<net::QuicSimpleServer> >, void (int)>::RunImpl<void (net::QuicSimpleServer::* const&)(int), std::tuple<base::internal::UnretainedWrapper<net::QuicSimpleServer> > const&, 0>(void ((anonymous namespace)::QuicSimpleServer::*&)((anonymous namespace)::QuicSimpleServer * const, int), const (anonymous namespace)::tuple<base::internal::UnretainedWrapper<net::QuicSimpleServer> > &, (anonymous namespace)::IndexSequence<0>, <unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x18a83>) (functor=
+    @0x5075cd8c80: (void ((anonymous namespace)::QuicSimpleServer::*)((anonymous namespace)::QuicSimpleServer * const, int)) 0x44d8b0 <(anonymous namespace)::QuicSimpleServer::OnReadComplete(int)>, bound=..., unbound_args=<unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x18a83>) at ../../base/bind_internal.h:361
+#6  0x000000000044eb9c in (anonymous namespace)::(anonymous namespace)::Invoker<base::internal::BindState<void (net::QuicSimpleServer::*)(int), base::internal::UnretainedWrapper<net::QuicSimpleServer> >, void (int)>::Run((anonymous namespace)::(anonymous namespace)::BindStateBase *, <unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x18a0f>) (base=0x5075cd8c60, unbound_args=<unknown type in /home/nabil/github/chromium/src/out/Default/quic_server, CU 0x0, DIE 0x18a0f>) at ../../base/bind_internal.h:339
+#7  0x00007ffff6ef3d6f in (anonymous namespace)::(anonymous namespace)::RunMixin<base::Callback<void (int), base::internal::CopyMode::Copyable, base::internal::RepeatMode::Repeating> >::Run(int) const (this=0x7fffffffbed8, args=35) at ../../base/callback.h:64
+#8  0x00007ffff770d1f7 in (anonymous namespace)::UDPSocketPosix::DoReadCallback(int) (this=0x5075c821e8, rv=35)
+    at ../../net/udp/udp_socket_posix.cc:512
+#9  0x00007ffff770cec9 in (anonymous namespace)::UDPSocketPosix::DidCompleteRead() (this=0x5075c821e8)
+    at ../../net/udp/udp_socket_posix.cc:534
+#10 0x00007ffff770cc82 in (anonymous namespace)::UDPSocketPosix::ReadWatcher::OnFileCanReadWithoutBlocking(int) (this=0x5075c822a8)
+---Type <return> to continue, or q <return> to quit---
+    at ../../net/udp/udp_socket_posix.cc:497
+#11 0x00007ffff66e4a81 in (anonymous namespace)::MessagePumpLibevent::FileDescriptorWatcher::OnFileCanReadWithoutBlocking(int, (anonymous namespace)::MessagePumpLibevent*) (this=0x5075c82268, fd=11, pump=0x5075c65a70) at ../../base/message_loop/message_pump_libevent.cc:95
+#12 0x00007ffff66e5f81 in (anonymous namespace)::MessagePumpLibevent::OnLibeventNotification(int, short, void*) (fd=11, flags=2, context=0x5075c82268) at ../../base/message_loop/message_pump_libevent.cc:344
+#13 0x00007ffff691edae in event_process_active (base=0x5075c1e020) at ../../base/third_party/libevent/event.c:381
+#14 0x00007ffff691e3f7 in event_base_loop (base=0x5075c1e020, flags=1) at ../../base/third_party/libevent/event.c:521
+#15 0x00007ffff66e6272 in (anonymous namespace)::MessagePumpLibevent::Run((anonymous namespace)::MessagePump::Delegate*) (this=0x5075c65a70, delegate=0x7fffffffde50) at ../../base/message_loop/message_pump_libevent.cc:254
+#16 0x00007ffff66cb71c in (anonymous namespace)::MessageLoop::RunHandler() (this=0x7fffffffde50)
+    at ../../base/message_loop/message_loop.cc:374
+#17 0x00007ffff67709e4 in (anonymous namespace)::RunLoop::Run() (this=0x7fffffffcc28) at ../../base/run_loop.cc:35
+#18 0x0000000000413ba5 in main(int, char**) (argc=7, argv=0x7fffffffe238) at ../../net/tools/quic/quic_simple_server_bin.cc:97
+(gdb) 
+
+
+
+
+================================================
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "net/quic/core/congestion_control/send_algorithm_interface.h"
+
+#include "net/quic/core/congestion_control/tcp_cubic_sender_bytes.h"
+#include "net/quic/core/congestion_control/verus.h"
+#include "net/quic/core/congestion_control/tcp_cubic_sender_packets.h"
+#include "net/quic/core/quic_flags.h"
+#include "net/quic/core/quic_protocol.h"
+
+namespace net {
+
+class RttStats;
+
+// Factory for send side congestion control algorithm.
+SendAlgorithmInterface* SendAlgorithmInterface::Create(
+    const QuicClock* clock,
+    const RttStats* rtt_stats,
+    CongestionControlType congestion_control_type,
+    QuicConnectionStats* stats,
+    QuicPacketCount initial_congestion_window) {
+
+  QuicPacketCount max_congestion_window = kDefaultMaxCongestionWindowPackets;
+  DVLOG(1) << "nabil. "<< "type:" << congestion_control_type;
+  switch (congestion_control_type) {
+    case kVerus:
+        printf("Verus Test tcp.\n");
+        //return new TcpVerusSenderBase(clock, rtt_stats, true /* use Reno */, initial_congestion_window, max_congestion_window, stats);
+        return new TcpVerusSenderBase(clock, rtt_stats, true /* use Reno */, stats);
+           
+    case kBBR:
+    case kCubic:
+      return new TcpCubicSenderPackets(
+          clock, rtt_stats, false /* don't use Reno */,
+          initial_congestion_window, max_congestion_window, stats);
+    case kCubicBytes:
+      return new TcpCubicSenderBytes(
+          clock, rtt_stats, false /* don't use Reno */,
+          initial_congestion_window, max_congestion_window, stats);
+    case kReno:
+      return new TcpCubicSenderPackets(clock, rtt_stats, true /* use Reno */,
+                                       initial_congestion_window,
+                                       max_congestion_window, stats);
+    case kRenoBytes:
+      return new TcpCubicSenderBytes(clock, rtt_stats, true /* use Reno */,
+                                     initial_congestion_window,
+                                     max_congestion_window, stats);
+  }
+  return nullptr;
+}
+
+}  // namespace net
+
+=================================================================================
+
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// The pure virtual class for send side congestion control algorithm.
+
+#ifndef NET_QUIC_CONGESTION_CONTROL_SEND_ALGORITHM_INTERFACE_H_
+#define NET_QUIC_CONGESTION_CONTROL_SEND_ALGORITHM_INTERFACE_H_
+
+#include <algorithm>
+#include <map>
+
+#include "net/base/net_export.h"
+#include "net/quic/core/quic_bandwidth.h"
+#include "net/quic/core/quic_clock.h"
+#include "net/quic/core/quic_config.h"
+#include "net/quic/core/quic_connection_stats.h"
+#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_time.h"
+
+namespace net {
+
+class CachedNetworkParameters;
+class RttStats;
+
+const QuicPacketCount kDefaultMaxCongestionWindowPackets = 2000;
+
+class NET_EXPORT_PRIVATE SendAlgorithmInterface {
+ public:
+  // A sorted vector of packets.
+  typedef std::vector<std::pair<QuicPacketNumber, QuicPacketLength>>
+      CongestionVector;
+
+  static SendAlgorithmInterface* Create(
+      const QuicClock* clock,
+      const RttStats* rtt_stats,
+      CongestionControlType type,
+      QuicConnectionStats* stats,
+      QuicPacketCount initial_congestion_window);
+
+  virtual ~SendAlgorithmInterface() {}
+
+  virtual void SetFromConfig(const QuicConfig& config,
+                             Perspective perspective) = 0;
+
+  // Sets the number of connections to emulate when doing congestion control,
+  // particularly for congestion avoidance.  Can be set any time.
+  virtual void SetNumEmulatedConnections(int num_connections) = 0;
+
+  // Indicates an update to the congestion state, caused either by an incoming
+  // ack or loss event timeout.  |rtt_updated| indicates whether a new
+  // latest_rtt sample has been taken, |byte_in_flight| the bytes in flight
+  // prior to the congestion event.  |acked_packets| and |lost_packets| are
+  // any packets considered acked or lost as a result of the congestion event.
+  virtual void OnCongestionEvent(bool rtt_updated,
+                                 QuicByteCount bytes_in_flight,
+                                 const CongestionVector& acked_packets,
+                                 const CongestionVector& lost_packets) = 0;
+
+  // Inform that we sent |bytes| to the wire, and if the packet is
+  // retransmittable. Returns true if the packet should be tracked by the
+  // congestion manager and included in bytes_in_flight, false otherwise.
+  // |bytes_in_flight| is the number of bytes in flight before the packet was
+  // sent.
+  // Note: this function must be called for every packet sent to the wire.
+  virtual bool OnPacketSent(QuicTime sent_time,
+                            QuicByteCount bytes_in_flight,
+                            QuicPacketNumber packet_number,
+                            QuicByteCount bytes,
+                            HasRetransmittableData is_retransmittable) = 0;
+
+  // Called when the retransmission timeout fires.  Neither OnPacketAbandoned
+  // nor OnPacketLost will be called for these packets.
+  virtual void OnRetransmissionTimeout(bool packets_retransmitted) = 0;
+
+  // Called when connection migrates and cwnd needs to be reset.
+  virtual void OnConnectionMigration() = 0;
+
+  // Calculate the time until we can send the next packet.
+  virtual QuicTime::Delta TimeUntilSend(
+      QuicTime now,
+      QuicByteCount bytes_in_flight) const = 0;
+
+  // The pacing rate of the send algorithm.  May be zero if the rate is unknown.
+  virtual QuicBandwidth PacingRate(QuicByteCount bytes_in_flight) const = 0;
+
+  // What's the current estimated bandwidth in bytes per second.
+  // Returns 0 when it does not have an estimate.
+  virtual QuicBandwidth BandwidthEstimate() const = 0;
+
+  // Returns the size of the current congestion window in bytes.  Note, this is
+  // not the *available* window.  Some send algorithms may not use a congestion
+  // window and will return 0.
+  virtual QuicByteCount GetCongestionWindow() const = 0;
+
+  // Whether the send algorithm is currently in slow start.  When true, the
+  // BandwidthEstimate is expected to be too low.
+  virtual bool InSlowStart() const = 0;
+
+  // Whether the send algorithm is currently in recovery.
+  virtual bool InRecovery() const = 0;
+
+  // Returns the size of the slow start congestion window in bytes,
+  // aka ssthresh.  Some send algorithms do not define a slow start
+  // threshold and will return 0.
+  virtual QuicByteCount GetSlowStartThreshold() const = 0;
+
+  virtual CongestionControlType GetCongestionControlType() const = 0;
+
+  // Called by the Session when we get a bandwidth estimate from the client.
+  // Uses the max bandwidth in the params if |max_bandwidth_resumption| is true.
+  virtual void ResumeConnectionState(
+      const CachedNetworkParameters& cached_network_params,
+      bool max_bandwidth_resumption) = 0;
+
+  // Retrieves debugging information about the current state of the
+  // send algorithm.
+  virtual std::string GetDebugState() const = 0;
+
+  // Called when the connection has no outstanding data to send. Specifically,
+  // this means that none of the data streams are write-blocked, there are no
+  // packets in the connection queue, and there are no pending retransmissins,
+  // i.e. the sender cannot send anything for reasons other than being blocked
+  // by congestion controller. This includes cases when the connection is
+  // blocked by the flow controller.
+  //
+  // The fact that this method is called does not necessarily imply that the
+  // connection would not be blocked by the congestion control if it actually
+  // tried to send data. If the congestion control algorithm needs to exclude
+  // such cases, it should use the internal state it uses for congestion control
+  // for that.
+  virtual void OnApplicationLimited(QuicByteCount bytes_in_flight) = 0;
+};
+
+}  // namespace net
+
+#endif  // NET_QUIC_CONGESTION_CONTROL_SEND_ALGORITHM_INTERFACE_H_
+

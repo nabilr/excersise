@@ -1,0 +1,13 @@
+# depslib dependency file v1.0
+1483444184 source:/home/nabil/github/excersise/networking/tcp_implementation/networking/main.c
+	<stdio.h>
+	<stdlib.h>
+	<sys/types.h>
+	<sys/socket.h>
+
+1483444203 source:/home/nabil/github/excersise/networking/tcp_implementation/networking/receiver.c
+	<stdio.h>
+	<stdlib.h>
+	<sys/types.h>
+	<sys/socket.h>
+
