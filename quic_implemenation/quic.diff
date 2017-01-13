@@ -1,0 +1,323 @@
+diff --git a/base/message_loop/message_loop.cc b/base/message_loop/message_loop.cc
+index 74287b1..9b41892 100644
+--- a/base/message_loop/message_loop.cc
++++ b/base/message_loop/message_loop.cc
+@@ -81,11 +81,13 @@ MessageLoop::NestingObserver::~NestingObserver() {}
+ 
+ MessageLoop::MessageLoop(Type type)
+     : MessageLoop(type, MessagePumpFactoryCallback()) {
++	  DVLOG(1)<<"messageLopp constrcutor called";
+   BindToCurrentThread();
+ }
+ 
+ MessageLoop::MessageLoop(std::unique_ptr<MessagePump> pump)
+     : MessageLoop(TYPE_CUSTOM, Bind(&ReturnPump, Passed(&pump))) {
++	  DVLOG(1)<<"messageLopp constrcutor called";
+   BindToCurrentThread();
+ }
+ 
+@@ -320,6 +322,7 @@ MessageLoop::MessageLoop(Type type, MessagePumpFactoryCallback pump_factory)
+           new internal::MessageLoopTaskRunner(incoming_task_queue_)),
+       task_runner_(unbound_task_runner_),
+       thread_id_(kInvalidThreadId) {
++	  DVLOG(1)<<"messageLopp constrcutor called";
+   // If type is TYPE_CUSTOM non-null pump_factory must be given.
+   DCHECK(type_ != TYPE_CUSTOM || !pump_factory_.is_null());
+ }
+@@ -367,6 +370,7 @@ void MessageLoop::SetThreadTaskRunnerHandle() {
+ 
+ void MessageLoop::RunHandler() {
+   DCHECK_EQ(this, current());
++  DVLOG(1)<<"nabil loop called";
+   pump_->Run(this);
+ }
+ 
+diff --git a/base/message_loop/message_pump.cc b/base/message_loop/message_pump.cc
+index 2f740f2..e5ea414 100644
+--- a/base/message_loop/message_pump.cc
++++ b/base/message_loop/message_pump.cc
+@@ -7,6 +7,7 @@
+ namespace base {
+ 
+ MessagePump::MessagePump() {
++DVLOG(1)<<"nabil MessagePump called";
+ }
+ 
+ MessagePump::~MessagePump() {
+diff --git a/chrome/browser/apps/app_shim/unix_domain_socket_acceptor.cc b/chrome/browser/apps/app_shim/unix_domain_socket_acceptor.cc
+index 491162c..8847cc9 100644
+--- a/chrome/browser/apps/app_shim/unix_domain_socket_acceptor.cc
++++ b/chrome/browser/apps/app_shim/unix_domain_socket_acceptor.cc
+@@ -17,6 +17,7 @@ UnixDomainSocketAcceptor::UnixDomainSocketAcceptor(const base::FilePath& path,
+     : named_pipe_(path.value()),
+       delegate_(delegate),
+       listen_handle_(mojo::edk::CreateServerHandle(named_pipe_, false)) {
++	  DVLOG(1) << 'nabil' << path.value();
+   DCHECK(delegate_);
+ }
+ 
+@@ -25,6 +26,7 @@ UnixDomainSocketAcceptor::~UnixDomainSocketAcceptor() {
+ }
+ 
+ bool UnixDomainSocketAcceptor::Listen() {
++	DVLOG(1)<<'nabil';
+   if (!listen_handle_.is_valid())
+     return false;
+ 
+diff --git a/media/cast/sender/congestion_control.cc b/media/cast/sender/congestion_control.cc
+index c7d81ad..39d4654 100644
+--- a/media/cast/sender/congestion_control.cc
++++ b/media/cast/sender/congestion_control.cc
+@@ -174,6 +174,7 @@ AdaptiveCongestionControl::AdaptiveCongestionControl(base::TickClock* clock,
+   DCHECK(!frame_stats_[0].ack_time.is_null());
+ }
+ 
++
+ CongestionControl::~CongestionControl() {}
+ AdaptiveCongestionControl::~AdaptiveCongestionControl() {}
+ 
+diff --git a/mojo/edk/embedder/scoped_platform_handle.h b/mojo/edk/embedder/scoped_platform_handle.h
+index 15b80ea..ca6c960 100644
+--- a/mojo/edk/embedder/scoped_platform_handle.h
++++ b/mojo/edk/embedder/scoped_platform_handle.h
+@@ -40,6 +40,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ScopedPlatformHandle {
+ 
+   PlatformHandle release() WARN_UNUSED_RESULT {
+     PlatformHandle rv = handle_;
++	DVLOG(1)<<'nabil';
+     handle_ = PlatformHandle();
+     return rv;
+   }
+diff --git a/net/net.gypi b/net/net.gypi
+index 5554b4d..228f16d 100644
+--- a/net/net.gypi
++++ b/net/net.gypi
+@@ -887,6 +887,8 @@
+       'quic/chromium/network_connection.h',
+       'quic/chromium/port_suggester.cc',
+       'quic/chromium/port_suggester.h',
++      'quic/core/congestion_control/verus.cc',
++      'quic/core/congestion_control/verus.hh',
+       'quic/core/congestion_control/cubic.cc',
+       'quic/core/congestion_control/cubic.h',
+       'quic/core/congestion_control/cubic_bytes.cc',
+diff --git a/net/quic/core/congestion_control/cubic.cc b/net/quic/core/congestion_control/cubic.cc
+index 89a347e..832164f 100644
+--- a/net/quic/core/congestion_control/cubic.cc
++++ b/net/quic/core/congestion_control/cubic.cc
+@@ -45,6 +45,7 @@ Cubic::Cubic(const QuicClock* clock)
+       epoch_(QuicTime::Zero()),
+       app_limited_start_time_(QuicTime::Zero()),
+       last_update_time_(QuicTime::Zero()) {
++  DVLOG(1) << "nabil ......";
+   Reset();
+ }
+ 
+diff --git a/net/quic/core/congestion_control/send_algorithm_interface.cc b/net/quic/core/congestion_control/send_algorithm_interface.cc
+index 2f6f338..569ecd1 100644
+--- a/net/quic/core/congestion_control/send_algorithm_interface.cc
++++ b/net/quic/core/congestion_control/send_algorithm_interface.cc
+@@ -5,6 +5,7 @@
+ #include "net/quic/core/congestion_control/send_algorithm_interface.h"
+ 
+ #include "net/quic/core/congestion_control/tcp_cubic_sender_bytes.h"
++#include "net/quic/core/congestion_control/verus.h"
+ #include "net/quic/core/congestion_control/tcp_cubic_sender_packets.h"
+ #include "net/quic/core/quic_flags.h"
+ #include "net/quic/core/quic_protocol.h"
+@@ -20,8 +21,15 @@ SendAlgorithmInterface* SendAlgorithmInterface::Create(
+     CongestionControlType congestion_control_type,
+     QuicConnectionStats* stats,
+     QuicPacketCount initial_congestion_window) {
++
+   QuicPacketCount max_congestion_window = kDefaultMaxCongestionWindowPackets;
++  DVLOG(1) << "nabil. "<< "type:" << congestion_control_type;
+   switch (congestion_control_type) {
++    case kVerus:
++        printf("Verus Test tcp.\n");
++        //return new TcpVerusSenderBase(clock, rtt_stats, true /* use Reno */, initial_congestion_window, max_congestion_window, stats);
++        return new TcpVerusSenderBase(clock, rtt_stats, true /* use Reno */, stats);
++           
+     case kBBR:
+     case kCubic:
+       return new TcpCubicSenderPackets(
+diff --git a/net/quic/core/crypto/crypto_protocol.h b/net/quic/core/crypto/crypto_protocol.h
+index 2881066..7f33cbc 100644
+--- a/net/quic/core/crypto/crypto_protocol.h
++++ b/net/quic/core/crypto/crypto_protocol.h
+@@ -53,6 +53,7 @@ const QuicTag kSRBF = TAG('S', 'R', 'B', 'F');   // Socket receive buffer
+ 
+ // Congestion control feedback types
+ const QuicTag kQBIC = TAG('Q', 'B', 'I', 'C');   // TCP cubic
++//const QuicTag kVerus = TAG('k', 'V', 'e', 'r');   // TCP cubic
+ 
+ // Connection options (COPT) values
+ const QuicTag kAFCW = TAG('A', 'F', 'C', 'W');   // Auto-tune flow control
+diff --git a/net/quic/core/quic_connection.cc b/net/quic/core/quic_connection.cc
+index dadba8c..41a411e 100644
+--- a/net/quic/core/quic_connection.cc
++++ b/net/quic/core/quic_connection.cc
+@@ -269,7 +269,8 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
+                                                      kDefaultPathId,
+                                                      clock_,
+                                                      &stats_,
+-                                                     kCubic,
++                                                     //kCubic,
++                                                     kVerus,
+                                                      kNack,
+                                                      /*delegate=*/nullptr)),
+       version_negotiation_state_(START_NEGOTIATION),
+diff --git a/net/quic/core/quic_protocol.h b/net/quic/core/quic_protocol.h
+index ce9fd25..bddf3d6 100644
+--- a/net/quic/core/quic_protocol.h
++++ b/net/quic/core/quic_protocol.h
+@@ -1061,6 +1061,7 @@ IsAwaitingPacket(const QuicAckFrame& ack_frame,
+ // some congestion control algorithms may use the same feedback type
+ // (Reno and Cubic are the classic example for that).
+ enum CongestionControlType {
++  kVerus,
+   kCubic,
+   kCubicBytes,
+   kReno,
+diff --git a/net/quic/core/quic_sent_packet_manager.cc b/net/quic/core/quic_sent_packet_manager.cc
+index c38db4c..9e4ccae 100644
+--- a/net/quic/core/quic_sent_packet_manager.cc
++++ b/net/quic/core/quic_sent_packet_manager.cc
+@@ -92,12 +92,14 @@ QuicSentPacketManager::QuicSentPacketManager(
+       largest_newly_acked_(0),
+       largest_mtu_acked_(0),
+       handshake_confirmed_(false) {
++	  DVLOG(1)<<"QuicSentPacketManager";
+   SetSendAlgorithm(congestion_control_type);
+ }
+ 
+ QuicSentPacketManager::~QuicSentPacketManager() {}
+ 
+ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
++	DVLOG(1)<<"log nabil";
+   if (config.HasReceivedInitialRoundTripTimeUs() &&
+       config.ReceivedInitialRoundTripTimeUs() > 0) {
+     rtt_stats_.set_initial_rtt_us(
+@@ -128,6 +130,7 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
+     SetSendAlgorithm(kCubicBytes);
+   }
+   using_pacing_ = !FLAGS_quic_disable_pacing_for_perf_tests;
++  using_pacing_ = false;
+ 
+   if (config.HasClientSentConnectionOption(k1CON, perspective_)) {
+     send_algorithm_->SetNumEmulatedConnections(1);
+@@ -290,6 +293,7 @@ void QuicSentPacketManager::MaybeInvokeCongestionEvent(
+ 
+ void QuicSentPacketManager::HandleAckForSentPackets(
+     const QuicAckFrame& ack_frame) {
++	DVLOG(1)<<"log nabil";
+   // Go through the packets we have not received an ack for and see if this
+   // incoming_ack shows they've been seen by the peer.
+   QuicTime::Delta ack_delay_time = ack_frame.ack_delay_time;
+diff --git a/net/quic/core/quic_time.h b/net/quic/core/quic_time.h
+index 92e31bc..c73e97c 100644
+--- a/net/quic/core/quic_time.h
++++ b/net/quic/core/quic_time.h
+@@ -129,6 +129,11 @@ class NET_EXPORT_PRIVATE QuicTime {
+ 
+   inline bool IsInitialized() const { return 0 != time_; }
+ 
++  int64_t get_time() {
++  	return time_;
++  }
++  	
++
+  private:
+   friend inline bool operator==(QuicTime lhs, QuicTime rhs);
+   friend inline bool operator<(QuicTime lhs, QuicTime rhs);
+diff --git a/net/tools/quic/quic_client_base.cc b/net/tools/quic/quic_client_base.cc
+index 14af28a..8cb39b0 100644
+--- a/net/tools/quic/quic_client_base.cc
++++ b/net/tools/quic/quic_client_base.cc
+@@ -189,6 +189,10 @@ ProofVerifier* QuicClientBase::proof_verifier() const {
+ 
+ QuicClientSession* QuicClientBase::CreateQuicClientSession(
+     QuicConnection* connection) {
++
++    QuicTagVector copt; copt.push_back(kVerus); 
++    config_.SetConnectionOptionsToSend(copt); 
++
+   session_.reset(new QuicClientSession(config_, connection, server_id_,
+                                        &crypto_config_, &push_promise_index_));
+   if (initial_max_packet_length_ != 0) {
+diff --git a/net/tools/quic/quic_dispatcher.cc b/net/tools/quic/quic_dispatcher.cc
+index b43b8e1..e1a1304 100644
+--- a/net/tools/quic/quic_dispatcher.cc
++++ b/net/tools/quic/quic_dispatcher.cc
+@@ -235,6 +235,7 @@ void QuicDispatcher::ProcessPacket(const IPEndPoint& server_address,
+   current_server_address_ = server_address;
+   current_client_address_ = client_address;
+   current_packet_ = &packet;
++  DVLOG(1)<<"nabil QuicDispatcher::ProcessPacket";
+   // ProcessPacket will cause the packet to be dispatched in
+   // OnUnauthenticatedPublicHeader, or sent to the time wait list manager
+   // in OnUnauthenticatedHeader.
+diff --git a/net/tools/quic/quic_in_memory_cache.cc b/net/tools/quic/quic_in_memory_cache.cc
+index a63f499..e5e5af6 100644
+--- a/net/tools/quic/quic_in_memory_cache.cc
++++ b/net/tools/quic/quic_in_memory_cache.cc
+@@ -239,6 +239,7 @@ void QuicInMemoryCache::InitializeFromDirectory(const string& cache_directory) {
+ 
+     // Tease apart filename into host and path.
+     StringPiece base(resource_file->file_name());
++     VLOG(1) << "nabil" << resource_file->file_name() <<" : " << base;
+     base.remove_prefix(cache_directory.length());
+     if (base[0] == '/') {
+       base.remove_prefix(1);
+@@ -247,6 +248,10 @@ void QuicInMemoryCache::InitializeFromDirectory(const string& cache_directory) {
+     resource_file->SetHostPathFromBase(base);
+     resource_file->Read();
+ 
++
++     VLOG(1) << "nabil" << resource_file->file_name() <<" : " << base;
++     VLOG(1) << "nabil" << resource_file->host() << ": " <<  resource_file->path();
++
+     AddResponse(resource_file->host(), resource_file->path(),
+                 resource_file->spdy_headers().Clone(), resource_file->body());
+ 
+@@ -316,6 +321,7 @@ void QuicInMemoryCache::AddResponseImpl(StringPiece host,
+ }
+ 
+ string QuicInMemoryCache::GetKey(StringPiece host, StringPiece path) const {
++  DVLOG(1) << "GetKey key " << host.as_string() + ":" +path.as_string();
+   return host.as_string() + path.as_string();
+ }
+ 
+diff --git a/net/tools/quic/quic_simple_server.cc b/net/tools/quic/quic_simple_server.cc
+index 4848cdd..2a8ad2c 100644
+--- a/net/tools/quic/quic_simple_server.cc
++++ b/net/tools/quic/quic_simple_server.cc
+@@ -87,6 +87,7 @@ void QuicSimpleServer::Initialize() {
+ QuicSimpleServer::~QuicSimpleServer() {}
+ 
+ int QuicSimpleServer::Listen(const IPEndPoint& address) {
++ DVLOG(1)<<"nabil " << "creating UDPServerSocket " ;
+   std::unique_ptr<UDPServerSocket> socket(
+       new UDPServerSocket(&net_log_, NetLogSource()));
+ 
+@@ -108,6 +109,8 @@ int QuicSimpleServer::Listen(const IPEndPoint& address) {
+     return rc;
+   }
+ 
++  DVLOG(1)<<"nabil Default receive buffer size" << kDefaultSocketReceiveBuffer;
++
+   rc = socket->SetSendBufferSize(20 * kMaxPacketSize);
+   if (rc < 0) {
+     LOG(ERROR) << "SetSendBufferSize() failed: " << ErrorToString(rc);
+diff --git a/net/udp/udp_server_socket.cc b/net/udp/udp_server_socket.cc
+index 90d47a1..123fc96 100644
+--- a/net/udp/udp_server_socket.cc
++++ b/net/udp/udp_server_socket.cc
+@@ -46,6 +46,7 @@ int UDPServerSocket::RecvFrom(IOBuffer* buf,
+                               int buf_len,
+                               IPEndPoint* address,
+                               const CompletionCallback& callback) {
++							  DVLOG(1)<<"nabil received data udp";
+   return socket_.RecvFrom(buf, buf_len, address, callback);
+ }
+ 
